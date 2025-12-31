@@ -15,7 +15,7 @@ const ProductGrid = dynamic(
 export async function getServerSideProps() {
   return {
     props: {
-      totalCount: 3425, // Figma value
+      totalCount: 3425,
     },
   };
 }
@@ -24,7 +24,7 @@ export default function Home({ totalCount }) {
   const [products, setProducts] = useState([]);
   const [showFilter, setShowFilter] = useState(false);
 
-  // Client-side fetch (reliable on Vercel)
+  // Client-side fetch
   useEffect(() => {
     fetch("https://fakestoreapi.com/products")
       .then((res) => res.json())
