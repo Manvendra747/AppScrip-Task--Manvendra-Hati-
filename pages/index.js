@@ -7,10 +7,17 @@ import Footer from "../components/Footer";
 
 export async function getServerSideProps() {
   try {
-    const res = await fetch("https://fakestoreapi.com/products");
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000);
+
+    const res = await fetch("https://fakestoreapi.com/products", {
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeout);
 
     if (!res.ok) {
-      throw new Error("API failed");
+      throw new Error(`API error: ${res.status}`);
     }
 
     const products = await res.json();
@@ -18,14 +25,25 @@ export async function getServerSideProps() {
     return {
       props: { products },
     };
-  } catch (err) {
-    console.error("SSR ERROR:", err.message);
+  } catch (error) {
+    console.error("SSR FETCH ERROR:", error.message);
 
+    // fallback mock data (SSR-safe)
     return {
-      props: { products: [] },
+      props: {
+        products: [
+          {
+            id: 1,
+            title: "Sample Product",
+            price: 99,
+            image: "https://via.placeholder.com/300",
+          },
+        ],
+      },
     };
   }
 }
+
 
 export default function Home({ products = [] }) {
   const [showFilter, setShowFilter] = useState(false);
