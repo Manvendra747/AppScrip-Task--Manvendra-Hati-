@@ -5,32 +5,29 @@ import Filters from "../components/Filters";
 import ProductGrid from "../components/ProductGrid";
 import Footer from "../components/Footer";
 
-export async function getServerSideProps({ req }) {
+export async function getServerSideProps() {
   try {
-    const protocol = req.headers["x-forwarded-proto"] || "http";
-    const host = req.headers.host;
-    const baseUrl = `${protocol}://${host}`;
-
-    const res = await fetch(`${baseUrl}/api/products`);
-
-    if (!res.ok) {
-      throw new Error("Internal API failed");
-    }
+    const res = await fetch("https://fakestoreapi.com/products");
 
     const products = await res.json();
 
     return {
-      props: { products },
+      props: {
+        products,
+        totalCount: 3425, // 🔥 FIGMA VALUE (UI ONLY)
+      },
     };
-  } catch (error) {
-    console.error("SSR ERROR:", error.message);
+  } catch {
     return {
-      props: { products: [] },
+      props: {
+        products: [],
+        totalCount: 3425,
+      },
     };
   }
 }
 
-export default function Home({ products = [] }) {
+export default function Home({ products = [], totalCount }) {
   const [showFilter, setShowFilter] = useState(false);
 
   return (
@@ -45,6 +42,7 @@ export default function Home({ products = [] }) {
 
       <Header />
 
+      {/* HERO */}
       <section className="hero">
         <h1>DISCOVER OUR PRODUCTS</h1>
         <p>
@@ -53,9 +51,11 @@ export default function Home({ products = [] }) {
         </p>
       </section>
 
+      {/* MAIN */}
       <main className="container">
+        {/* TOOLBAR */}
         <div className="toolbar">
-          <span>{products.length} ITEMS</span>
+          <span>{totalCount} ITEMS</span>
 
           <button
             className="filter-toggle"
