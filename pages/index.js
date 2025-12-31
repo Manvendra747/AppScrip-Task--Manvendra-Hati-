@@ -1,39 +1,35 @@
 import Head from "next/head";
 import { useEffect, useState } from "react";
+import dynamic from "next/dynamic";
 import Header from "../components/Header";
 import Filters from "../components/Filters";
-import ProductGrid from "../components/ProductGrid";
 import Footer from "../components/Footer";
 
-/**
- * SSR is still used for page rendering + SEO.
- * We intentionally do NOT depend on fakestoreapi here
- * because it is unstable on serverless SSR.
- */
+// Client-only product grid (prevents Vercel hydration issues)
+const ProductGrid = dynamic(
+  () => import("../components/ProductGrid"),
+  { ssr: false }
+);
+
+// SSR is still used for page shell + SEO
 export async function getServerSideProps() {
   return {
     props: {
-      initialProducts: [],   // SSR-safe
-      totalCount: 3425       // FIGMA VALUE
+      totalCount: 3425, // Figma value
     },
   };
 }
 
-export default function Home({ initialProducts, totalCount }) {
-  const [products, setProducts] = useState(initialProducts);
+export default function Home({ totalCount }) {
+  const [products, setProducts] = useState([]);
   const [showFilter, setShowFilter] = useState(false);
 
-  /**
-   * Client-side hydration for mock API
-   * (this is intentional and acceptable for mock data)
-   */
+  // Client-side fetch (reliable on Vercel)
   useEffect(() => {
-    if (products.length === 0) {
-      fetch("https://fakestoreapi.com/products")
-        .then((res) => res.json())
-        .then((data) => setProducts(data))
-        .catch(() => setProducts([]));
-    }
+    fetch("https://fakestoreapi.com/products")
+      .then((res) => res.json())
+      .then((data) => setProducts(data))
+      .catch(() => setProducts([]));
   }, []);
 
   return (
@@ -44,22 +40,21 @@ export default function Home({ initialProducts, totalCount }) {
           name="description"
           content="Discover curated and handcrafted products"
         />
-        <h1>Discover Our Products</h1>
       </Head>
 
       <Header />
 
       {/* HERO */}
       <section className="hero">
-        <h2>DISCOVER OUR PRODUCTS</h2>
+        <h1>DISCOVER OUR PRODUCTS</h1>
         <p>
           Lorem ipsum dolor sit amet consectetur. Amet est posuere rhoncus
           scelerisque. Dolor integer scelerisque nibh amet mi ut elementum dolor.
         </p>
       </section>
 
+      {/* MAIN */}
       <main className="container">
-        {/* TOOLBAR */}
         <div className="toolbar">
           <span>{totalCount} ITEMS</span>
 

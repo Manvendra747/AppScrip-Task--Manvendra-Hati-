@@ -441,3 +441,34 @@ body {
     width: 100%;
   }
 }
+
+/* PRODUCT GRID */
+
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 24px;
+  padding: 24px 0;
+}
+
+.product-card {
+  border: 1px solid #eee;
+  padding: 16px;
+  background: #fff;
+}
+
+.product-card img {
+  width: 100%;
+  height: 220px;
+  object-fit: contain;
+}
+
+.product-card h3 {
+  font-size: 14px;
+  margin: 12px 0 6px;
+}
+
+.product-card p {
+  font-size: 14px;
+  font-weight: 600;
+}
