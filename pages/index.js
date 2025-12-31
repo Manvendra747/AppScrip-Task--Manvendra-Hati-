@@ -7,9 +7,9 @@ import Footer from "../components/Footer";
 
 export async function getServerSideProps({ req }) {
   try {
-    const baseUrl = process.env.VERCEL_URL
-      ? `https://${process.env.VERCEL_URL}`
-      : "http://localhost:3000";
+    const protocol = req.headers["x-forwarded-proto"] || "http";
+    const host = req.headers.host;
+    const baseUrl = `${protocol}://${host}`;
 
     const res = await fetch(`${baseUrl}/api/products`);
 
@@ -24,7 +24,6 @@ export async function getServerSideProps({ req }) {
     };
   } catch (error) {
     console.error("SSR ERROR:", error.message);
-
     return {
       props: { products: [] },
     };
@@ -46,7 +45,6 @@ export default function Home({ products = [] }) {
 
       <Header />
 
-      {/* HERO */}
       <section className="hero">
         <h1>DISCOVER OUR PRODUCTS</h1>
         <p>
@@ -55,9 +53,7 @@ export default function Home({ products = [] }) {
         </p>
       </section>
 
-      {/* MAIN */}
       <main className="container">
-        {/* TOOLBAR */}
         <div className="toolbar">
           <span>{products.length} ITEMS</span>
 
@@ -77,7 +73,6 @@ export default function Home({ products = [] }) {
           </select>
         </div>
 
-        {/* CONTENT */}
         <div className={`content ${showFilter ? "with-filter" : "no-filter"}`}>
           {showFilter && <Filters />}
           <ProductGrid products={products} />
