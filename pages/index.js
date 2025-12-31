@@ -6,12 +6,28 @@ import ProductGrid from "../components/ProductGrid";
 import Footer from "../components/Footer";
 
 export async function getServerSideProps() {
-  const res = await fetch("https://fakestoreapi.com/products");
-  const products = await res.json();
-  return { props: { products } };
+  try {
+    const res = await fetch("https://fakestoreapi.com/products");
+
+    if (!res.ok) {
+      throw new Error("API failed");
+    }
+
+    const products = await res.json();
+
+    return {
+      props: { products },
+    };
+  } catch (err) {
+    console.error("SSR ERROR:", err.message);
+
+    return {
+      props: { products: [] },
+    };
+  }
 }
 
-export default function Home({ products }) {
+export default function Home({ products = [] }) {
   const [showFilter, setShowFilter] = useState(false);
 
   return (
@@ -25,6 +41,7 @@ export default function Home({ products }) {
       </Head>
 
       <Header />
+
       <section className="hero">
         <h1>DISCOVER OUR PRODUCTS</h1>
         <p>
@@ -35,11 +52,11 @@ export default function Home({ products }) {
 
       <main className="container">
         <div className="toolbar">
-          <span>3425 ITEMS</span>
+          <span>{products.length} ITEMS</span>
 
           <button
             className="filter-toggle"
-            onClick={() => setShowFilter(!showFilter)}
+            onClick={() => setShowFilter((v) => !v)}
           >
             {showFilter ? "HIDE FILTER" : "SHOW FILTER"}
           </button>
