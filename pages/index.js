@@ -7,43 +7,35 @@ import Footer from "../components/Footer";
 
 export async function getServerSideProps() {
   try {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 5000);
-
     const res = await fetch("https://fakestoreapi.com/products", {
-      signal: controller.signal,
+      headers: {
+        "User-Agent": "Mozilla/5.0",
+        Accept: "application/json",
+      },
     });
 
-    clearTimeout(timeout);
-
     if (!res.ok) {
-      throw new Error(`API error: ${res.status}`);
+      throw new Error(`API failed with status ${res.status}`);
     }
 
     const products = await res.json();
 
     return {
-      props: { products },
+      props: {
+        products,
+      },
     };
   } catch (error) {
     console.error("SSR FETCH ERROR:", error.message);
 
-    // fallback mock data (SSR-safe)
+    // Never crash SSR
     return {
       props: {
-        products: [
-          {
-            id: 1,
-            title: "Sample Product",
-            price: 99,
-            image: "https://via.placeholder.com/300",
-          },
-        ],
+        products: [],
       },
     };
   }
 }
-
 
 export default function Home({ products = [] }) {
   const [showFilter, setShowFilter] = useState(false);
@@ -60,6 +52,7 @@ export default function Home({ products = [] }) {
 
       <Header />
 
+      {/* HERO */}
       <section className="hero">
         <h1>DISCOVER OUR PRODUCTS</h1>
         <p>
@@ -68,13 +61,15 @@ export default function Home({ products = [] }) {
         </p>
       </section>
 
+      {/* MAIN */}
       <main className="container">
+        {/* TOOLBAR */}
         <div className="toolbar">
           <span>{products.length} ITEMS</span>
 
           <button
             className="filter-toggle"
-            onClick={() => setShowFilter((v) => !v)}
+            onClick={() => setShowFilter((prev) => !prev)}
           >
             {showFilter ? "HIDE FILTER" : "SHOW FILTER"}
           </button>
@@ -88,6 +83,7 @@ export default function Home({ products = [] }) {
           </select>
         </div>
 
+        {/* CONTENT */}
         <div className={`content ${showFilter ? "with-filter" : "no-filter"}`}>
           {showFilter && <Filters />}
           <ProductGrid products={products} />
