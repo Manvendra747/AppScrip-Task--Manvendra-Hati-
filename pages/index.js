@@ -1,34 +1,40 @@
 import Head from "next/head";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Header from "../components/Header";
 import Filters from "../components/Filters";
 import ProductGrid from "../components/ProductGrid";
 import Footer from "../components/Footer";
 
+/**
+ * SSR is still used for page rendering + SEO.
+ * We intentionally do NOT depend on fakestoreapi here
+ * because it is unstable on serverless SSR.
+ */
 export async function getServerSideProps() {
-  try {
-    const res = await fetch("https://fakestoreapi.com/products");
-
-    const products = await res.json();
-
-    return {
-      props: {
-        products,
-        totalCount: 3425, // 🔥 FIGMA VALUE (UI ONLY)
-      },
-    };
-  } catch {
-    return {
-      props: {
-        products: [],
-        totalCount: 3425,
-      },
-    };
-  }
+  return {
+    props: {
+      initialProducts: [],   // SSR-safe
+      totalCount: 3425       // FIGMA VALUE
+    },
+  };
 }
 
-export default function Home({ products = [], totalCount }) {
+export default function Home({ initialProducts, totalCount }) {
+  const [products, setProducts] = useState(initialProducts);
   const [showFilter, setShowFilter] = useState(false);
+
+  /**
+   * Client-side hydration for mock API
+   * (this is intentional and acceptable for mock data)
+   */
+  useEffect(() => {
+    if (products.length === 0) {
+      fetch("https://fakestoreapi.com/products")
+        .then((res) => res.json())
+        .then((data) => setProducts(data))
+        .catch(() => setProducts([]));
+    }
+  }, []);
 
   return (
     <>
@@ -38,20 +44,20 @@ export default function Home({ products = [], totalCount }) {
           name="description"
           content="Discover curated and handcrafted products"
         />
+        <h1>Discover Our Products</h1>
       </Head>
 
       <Header />
 
       {/* HERO */}
       <section className="hero">
-        <h1>DISCOVER OUR PRODUCTS</h1>
+        <h2>DISCOVER OUR PRODUCTS</h2>
         <p>
           Lorem ipsum dolor sit amet consectetur. Amet est posuere rhoncus
           scelerisque. Dolor integer scelerisque nibh amet mi ut elementum dolor.
         </p>
       </section>
 
-      {/* MAIN */}
       <main className="container">
         {/* TOOLBAR */}
         <div className="toolbar">
