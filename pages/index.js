@@ -5,34 +5,28 @@ import Filters from "../components/Filters";
 import ProductGrid from "../components/ProductGrid";
 import Footer from "../components/Footer";
 
-export async function getServerSideProps() {
+export async function getServerSideProps({ req }) {
   try {
-    const res = await fetch("https://fakestoreapi.com/products", {
-      headers: {
-        "User-Agent": "Mozilla/5.0",
-        Accept: "application/json",
-      },
-    });
+    const baseUrl = process.env.VERCEL_URL
+      ? `https://${process.env.VERCEL_URL}`
+      : "http://localhost:3000";
+
+    const res = await fetch(`${baseUrl}/api/products`);
 
     if (!res.ok) {
-      throw new Error(`API failed with status ${res.status}`);
+      throw new Error("Internal API failed");
     }
 
     const products = await res.json();
 
     return {
-      props: {
-        products,
-      },
+      props: { products },
     };
   } catch (error) {
-    console.error("SSR FETCH ERROR:", error.message);
+    console.error("SSR ERROR:", error.message);
 
-    // Never crash SSR
     return {
-      props: {
-        products: [],
-      },
+      props: { products: [] },
     };
   }
 }
@@ -69,7 +63,7 @@ export default function Home({ products = [] }) {
 
           <button
             className="filter-toggle"
-            onClick={() => setShowFilter((prev) => !prev)}
+            onClick={() => setShowFilter((v) => !v)}
           >
             {showFilter ? "HIDE FILTER" : "SHOW FILTER"}
           </button>
